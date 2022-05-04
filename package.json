@@ -1,0 +1,52 @@
+{
+  "name": "asim.unity.utils.geometry",
+  "version": "0.1.0",
+  "displayName": "Asim Unity Utils Geometry",
+  "description": "Asim Geometry",
+  "unity": "2020.3",
+  "unityRelease": "26f1",
+  "keywords": [
+    "asim",
+    "unity",
+    "utils",
+    "geometry"
+  ],
+  "type": "library",
+  "samples": [
+    {
+      "displayName": "IsPointInEllipse",
+      "description": "Example of Geometry Utils in action",
+      "path": "Samples~/Examples/IsPointInEllipse_Example"
+    },
+	{
+      "displayName": "IsPointInRadius",
+      "description": "Example of Geometry Utils in action",
+      "path": "Samples~/Examples/IsPointInRadius_Example"
+    },
+	{
+      "displayName": "IsPointInRect",
+      "description": "Example of Geometry Utils in action",
+      "path": "Samples~/Examples/IsPointInRect_Example"
+    },
+	{
+      "displayName": "IsPointInTriangle",
+      "description": "Example of Geometry Utils in action",
+      "path": "Samples~/Examples/IsPointInTriangle_Example"
+    },
+	{
+      "displayName": "OrientationPoint",
+      "description": "Example of Geometry Utils in action",
+      "path": "Samples~/Examples/OrientationPoint_Example"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GDAsim/asim.unity.utils.geometry.git"
+  },
+  "author": "GDAsim <gamedevelopementasim@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GDAsim/asim.unity.utils.geometry/issues"
+  },
+  "homepage": "https://github.com/GDAsim/asim.unity.utils.geometry#readme"
+}
