@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace asim.unity.utils.geometry
@@ -24,6 +23,16 @@ namespace asim.unity.utils.geometry
 
             return Vector3.Dot(a - d, Vector3.Cross(b - d, c - d)) / 6;
         }
+
+        public static Vector2 RotatePointAroundPivot(Vector2 pivot, Vector2 point, float angle)
+        {
+            //step 1. take point and minus pivot, this will give coordinates based on origin (0,0)
+            Vector2 p = (point - pivot);
+            //Step 2. apply rotation algoirthm
+            Vector2 rotatedPoint = new Vector2(p.x * Mathf.Cos(angle) - p.y * Mathf.Sin(angle), p.y * Mathf.Cos(angle) + p.x * Mathf.Sin(angle));
+            return rotatedPoint;
+        }
+
 
 
         
@@ -68,19 +77,55 @@ namespace asim.unity.utils.geometry
             //normal = (p2.y - p1.y,p1.x - p2.x)
             //dot = (p.x - p1.x)(p2.y - p1.y) + (p.y - p1.y)*(p1.x - p2.x)
 
-            float val = (p.x - p1.x) * (p2.y - p1.y) - (p.y - p1.y) * (p2.x - p1.x);
+            float val = (p.x - p1.x) * (p2.y - p1.y) -
+                        (p.y - p1.y) * (p2.x - p1.x);
 
             if (val == 0) return 0;  // colinear
             return (int)Mathf.Sign(-val); // CCW or CW
         }
 
+        /// <summary>
+        /// compute direction of points going to the left or right of vector v1->v2 using dot product
+        /// Uses the Shoelace algorithm to calculate area, if area is negative, then it is going to the left(CCW)
+        /// </summary>
+        public static int Orientation3(Vector2 p1, Vector2 p2, Vector2 p)
+        {
+            //not exactly using the shoelace algorithm,
+            float area = p1.x * (p.y - p2.y) + 
+                         p2.x * (p1.y - p.y) + 
+                         p.x * (p2.y - p1.y);
+
+            if (area == 0) return 0; //colinear
+            return (int)Mathf.Sign(-area); // CCW or CW
+        }
+
+        /// <summary>
+        /// compute direction of points going to the left or right of vector v1->v2 using gradient
+        /// This works by comparing slopes, to see which one is steeper
+        /// </summary>
+        public static int Orientation4(Vector2 p1, Vector2 p2, Vector2 p)
+        {
+            float val = (p2.x - p1.x) * (p.y - p2.y) -
+                        (p2.y - p1.y) * (p.x - p2.x);
+
+            if (val == 0) return 0;  // colinear
+            return (int)Mathf.Sign(val); // CCW or CW
+        }
 
 
 
+        /// <summary>
+        /// Check if a certain point is between a line (Asuming that all 3 points are colinear)
+        /// </summary>
+        public static bool IsPointBetweenColinearLine(Vector2 p1, Vector2 p2, Vector2 p)
+        {
+            Vector2 ab = p2 - p1;
+            Vector2 ac = p - p1;
+            Vector2 bc = p - p2;
 
-
-
-
+            //Step 1. Compare Length to be smaller
+            return ab.sqrMagnitude >= ac.sqrMagnitude && ab.sqrMagnitude >= bc.sqrMagnitude;
+        }
 
         /// <summary>
         /// Check to see if Point is within certain radius of a target center
@@ -234,6 +279,103 @@ namespace asim.unity.utils.geometry
 
             if (v1 == -1 || v2 == -1 || v3 == -1 || v4 == -1) return -1;// outside rect
             return (int)(v1 * v2 * v3 * v4);// 0 or 1 , on rect or inside rect
+        }
+
+
+        /// <summary>
+        /// Check to see if two lines intercept each other
+        /// Works for Parallel or non Parallel lines
+        /// Done by formulating parametric equation of 
+        /// Line segment 'L1 = l1p1+u(l1p2-l1p1)'
+        /// Line segment 'L2 = l2p1+v(l2p2-l2p1)'
+        /// Interceting point is where L1 == L2
+        /// http://thirdpartyninjas.com/blog/2008/10/07/line-segment-intersection/
+        /// Faster Version,
+        /// if lines are not parrelel, returns the interception point
+        /// if lines are parrerl, returns interception line segment if any
+        /// </summary>
+        public static (bool IsParallel,bool IsIntercept,Vector2,Vector2) IsLinesIntercept(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
+        {
+            Vector2 interceptionpoint = Vector2.zero;
+
+            float denominator = (line2p2.y - line2p1.y) * (line1p2.x - line1p1.x) - (line2p2.x - line2p1.x) * (line1p2.y - line1p1.y);
+
+            //Step 1. Make sure the denominator is not 0, otherwise, the lines are parallel
+            if (denominator != 0)
+            {
+                //Step 2. calculate the u and v values to make sure they are within range of (0-1)
+                float u = ((line2p2.x - line2p1.x) * (line1p1.y - line2p1.y) - (line2p2.y - line2p1.y) * (line1p1.x - line2p1.x)) / denominator;
+                float v = ((line1p2.x - line1p1.x) * (line1p1.y - line2p1.y) - (line1p2.y - line1p1.y) * (line1p1.x - line2p1.x)) / denominator;
+                bool withinrange = u >= 0f && u <= 1f && v >= 0f && v <= 1f;
+
+                //Step 3. Calculate interceptionpoint if within range
+                if (withinrange) interceptionpoint = line1p1 + u * (line1p2 - line1p1);
+
+                return (false,withinrange, interceptionpoint,Vector2.zero);
+            }
+            //Step Ex1. If lines are parallel,
+            else
+            {
+                //Step Ex 2. Check if lines are colinear
+                bool isColinear = Orientation(line1p1, line1p2, line2p1) * Orientation(line1p1, line1p2, line2p2) == 0;
+                if (!isColinear) return (true, false, Vector2.zero, Vector2.zero);
+
+                //Step Ex 3. There is either zero or two points that are within the lines,
+                //Check which two points is within if any
+                int i = 0;
+                Vector2[] pointWithin = new Vector2[2];
+                if (IsPointBetweenColinearLine(line2p1, line2p2, line1p1)) //line1p1
+                {
+                    pointWithin[i++] = line1p1;
+                }
+                if (IsPointBetweenColinearLine(line2p1, line2p2, line1p2)) //line1p2
+                {
+                    pointWithin[i++] = line1p2;
+                    if (i == 2) return (true, true, pointWithin[0], pointWithin[1]); //Check for early exit
+                }
+                if (IsPointBetweenColinearLine(line1p1, line1p2, line2p1)) //line2p1
+                {
+                    pointWithin[i++] = line2p1;
+                    if (i == 2) return (true, true, pointWithin[0], pointWithin[1]); //Check for early exit
+                }
+                if (IsPointBetweenColinearLine(line1p1, line1p2, line2p2)) //line2p2
+                {
+                    pointWithin[i++] = line2p2;
+                    return (true, true, pointWithin[0], pointWithin[1]);
+                }
+
+                return (true, false, Vector2.zero, Vector2.zero);
+            }
+            
+        }
+
+        /// <summary>
+        /// Check to see if two lines intercept each other
+        /// Done by Checking Orientation of the lines to each other points
+        /// https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+        /// Slower Version, does not return intercept point
+        /// </summary>
+        public static bool IsLinesIntercept2(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
+        {
+            //step 1. check using one the two points of one line, check the orintation to each point on the other line
+            int o1 = Orientation(line1p1, line1p2, line2p1);
+            int o2 = Orientation(line1p1, line1p2, line2p2);
+
+            //step 2. check using the other two points of the other line, check the orintation to each point on the other line
+            int o3 = Orientation(line2p1, line2p2, line1p1);
+            int o4 = Orientation(line2p1, line2p2, line1p2);
+
+            //Step 3. Lines intercept if line orintation checks is different (have different orientations)
+            if (o1 != o2 && o3 != o4) return true;
+
+            //Step 4. Check Special Cases when points are collinear
+            if (o1 == 0 && IsPointBetweenColinearLine(line1p1, line1p2, line2p1)) return true;
+            if (o2 == 0 && IsPointBetweenColinearLine(line1p1, line1p2, line2p2)) return true;
+
+            if (o3 == 0 && IsPointBetweenColinearLine(line2p1, line2p2, line1p1)) return true;
+            if (o4 == 0 && IsPointBetweenColinearLine(line2p1, line2p2, line1p2)) return true;
+
+            return false; 
         }
     }
 }
