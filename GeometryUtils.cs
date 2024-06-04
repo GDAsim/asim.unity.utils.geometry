@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace asim.unity.utils.geometry
@@ -376,6 +377,66 @@ namespace asim.unity.utils.geometry
             if (o4 == 0 && IsPointBetweenColinearLine(line2p1, line2p2, line1p2)) return true;
 
             return false; 
+        }
+
+
+        /// <summary>
+        /// Odd-Even Rule
+        /// LineIntersection Count Rule
+        /// Uses an additional known "pointOutside"
+        /// Special case is handeled for parrarel line intersection
+        /// </summary>
+        public static bool IsPointInPolygon(List<Vector2> polygon, Vector2 point, Vector2 pointOutside) 
+        {
+            int intersectionCount = 0;
+            for (int i = 0; i < polygon.Count; i++)
+            {
+                (Vector2 p1, Vector2 p2) line = (polygon[i], polygon[(i + 1) % polygon.Count]);
+
+                (Vector2 p1, Vector2 p2) intersectingLine = (point, pointOutside);
+
+                (bool isParallel, bool isIntersect,Vector2 _, Vector2 _) = IsLinesIntercept(line.p1, line.p2, intersectingLine.p1, intersectingLine.p2);
+
+                if (isParallel)
+                {
+                    return IsPointBetweenColinearLine(line.p1, line.p2, point);
+                }
+
+                if (isIntersect) intersectionCount++;
+            }
+            return intersectionCount % 2 != 0;
+        }
+
+        /// <summary>
+        /// Non-Zero Winding Rule
+        /// LineIntersection Gradient/Normal Rule
+        /// Similar to Odd-Even Rule but checks direction(winding) of polygon
+        /// use dotproduct to get signed angle of vectors to determine direction using sign
+        /// </summary>
+        public static bool IsPointInPolygon2(List<Vector2> polygon, Vector2 point, Vector2 pointOutside)
+        {
+            int windingCount = 0;
+            for (int i = 0; i < polygon.Count; i++)
+            {
+                (Vector2 p1, Vector2 p2) line = (polygon[i], polygon[(i + 1) % polygon.Count]);
+
+                (Vector2 p1, Vector2 p2) intersectingLine = (point, pointOutside);
+
+                (bool isParallel, bool isIntersect, Vector2 _, Vector2 _) = IsLinesIntercept(line.p1, line.p2, intersectingLine.p1, intersectingLine.p2);
+
+                if (isParallel)
+                {
+                    return IsPointBetweenColinearLine(line.p1, line.p2, point);
+                }
+
+                if (isIntersect)
+                {
+                    var direction = Orientation(intersectingLine.p1, intersectingLine.p2, line.p2);
+                    if (direction > 0) windingCount++;
+                    else if (direction < 0) windingCount--;
+                }
+            }
+            return windingCount != 0;
         }
     }
 }
