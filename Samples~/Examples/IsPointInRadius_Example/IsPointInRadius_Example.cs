@@ -4,6 +4,7 @@ using asim.unity.helpers;
 
 namespace asim.unity.utils.geometry
 {
+    [ExecuteInEditMode]
     public class IsPointInRadius_Example : MonoBehaviour
     {
         [SerializeField] Text Text;
@@ -11,33 +12,41 @@ namespace asim.unity.utils.geometry
         [SerializeField] Camera cam;
 
         [SerializeField] GameObject TargetCenter;
-        public float CircleRadius;
+        [SerializeField] float CircleRadius;
 
         [SerializeField] GameObject Point;
 
         void Update()
         {
-            var newpos = new Vector3(Mathf.PingPong(Time.unscaledTime * 8, CircleRadius * 2.4f) - CircleRadius*1.2f,0,0);
+            var newpos = new Vector3(Mathf.PingPong(Time.unscaledTime * 8, CircleRadius * 2.4f) - CircleRadius * 1.2f, 0, 0);
             Point.transform.position = newpos;
         }
         void OnGUI()
         {
-            //Convert World Pos to GUI Pos
-            Vector3 GUIcenterpos = cam.WorldToScreenPoint(TargetCenter.transform.position);
-            Vector3 GUIpointpos = cam.WorldToScreenPoint(Point.transform.position);
-            GUIcenterpos.y = UnityOnGUIHelper.Height - GUIcenterpos.y;
-            GUIpointpos.y = UnityOnGUIHelper.Height - GUIpointpos.y;
-            Vector3 radius = cam.WorldToScreenPoint(TargetCenter.transform.position + new Vector3(CircleRadius, 0, 0));
-            radius.y = UnityOnGUIHelper.Height - radius.y;
+            //Convert World Pos to Screen Pos
+            Vector3 screen_centerpos = UnityOnGUIHelper.WorldToScreenPos(cam, TargetCenter.transform.position);
+            Vector3 screen_pointpos = UnityOnGUIHelper.WorldToScreenPos(cam, Point.transform.position);
+            Vector3 radius = UnityOnGUIHelper.WorldToScreenPos(cam, TargetCenter.transform.position + new Vector3(CircleRadius, 0, 0));
 
-            var GUICircleRadius = Vector3.Distance(GUIcenterpos, radius);
+            var GUICircleRadius = Vector3.Distance(screen_centerpos, radius);
 
-            int IsPointInRadius = GeometryUtils.IsPointInRadius(GUIcenterpos, GUICircleRadius, GUIpointpos);
-            if (IsPointInRadius == 1) Text.text = "Point Inside Center Radius";
-            else if (IsPointInRadius == -1) Text.text = "Point Outside Center Radius";
-            else Text.text = "Point On Center Radius";
+            //Draw Ellipse
+            UnityOnGUIHelper.DrawEllipse(screen_centerpos, new Vector2(GUICircleRadius, GUICircleRadius), 0, new Color32(0, 255, 0, 255), Color.red, 1);
 
-            UnityOnGUIHelper.DrawEllipse(GUIcenterpos, new Vector2(GUICircleRadius, GUICircleRadius), 0, new Color32(0, 255, 0,255), Color.red, 1);
+            //Update Text
+            int IsPointInRadius = GeometryUtils.IsPointInRadius(screen_centerpos, GUICircleRadius, screen_pointpos);
+            if (IsPointInRadius == 1)
+            {
+                Text.text = "Point Inside Center Radius";
+            }
+            else if (IsPointInRadius == -1)
+            {
+                Text.text = "Point Outside Center Radius";
+            }
+            else
+            {
+                Text.text = "Point On Center Radius";
+            }
         }
     }
 }

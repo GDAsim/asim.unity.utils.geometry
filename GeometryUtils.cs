@@ -113,6 +113,20 @@ namespace asim.unity.utils.geometry
             return (int)Mathf.Sign(val); // CCW or CW
         }
 
+        /// <summary>
+        /// Check if point is colinear
+        /// Uses Triangle area method
+        /// </summary>
+        public static bool IsPointColinear(Vector2 p1, Vector2 p2, Vector2 p) => TriangleGetDeterminant(p1, p2, p) == 0;
+
+        /// <summary>
+        /// Check if point is colinear
+        /// Uses Slope/Gradient method -> optimized to use cross product to avoid division by zero
+        /// </summary>
+        public static bool IsPointColinear2(Vector2 p1, Vector2 p2, Vector2 p)
+        {
+            return (p2.y - p1.y) * (p.x - p2.x) == (p.y - p2.y) * (p2.x - p1.x);
+        }
 
 
         /// <summary>
@@ -163,10 +177,27 @@ namespace asim.unity.utils.geometry
 
         /// <summary>
         /// Get area of Triangle using 3 points
+        /// determinant method
         /// </summary>
         public static float TriangleGetArea(Vector2 p1, Vector2 p2, Vector2 p3)
         {
             return Mathf.Abs(p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) / 2f;
+        }
+
+        /// <summary>
+        /// Get signed area of Triangle using 3 points
+        /// </summary>
+        public static float TriangleGetSignedArea(Vector2 p1, Vector2 p2, Vector2 p3)
+        {
+            return (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) / 2f;
+        }
+
+        /// <summary>
+        /// Get only Determinant 
+        /// </summary>
+        public static float TriangleGetDeterminant(Vector2 p1, Vector2 p2, Vector2 p3)
+        {
+            return (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y));
         }
 
         #region Point in Triangle http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html
@@ -437,6 +468,28 @@ namespace asim.unity.utils.geometry
                 }
             }
             return windingCount != 0;
+        }
+
+        /// <summary>
+        /// Check if poylgon is convex.
+        /// Check to see if total Angle adds to 360
+        /// </summary>
+        public static bool IsPolygonConvex(List<Vector2> polygon)
+        {
+            float totalAngle = 0;
+            for (int i = 0; i < polygon.Count; i++)
+            {
+                int index = i - 1;
+                if (index < 0) index += polygon.Count;
+                var prevIndex = index;
+
+                var currentIndex = i;
+                var nextIndex = (i + 1) % polygon.Count;
+
+                totalAngle += Vector2.SignedAngle(polygon[prevIndex] - polygon[currentIndex], polygon[currentIndex] - polygon[nextIndex]);
+            }
+            
+            return Mathf.Approximately(totalAngle, 360);
         }
     }
 }

@@ -14,31 +14,15 @@
   "type": "library",
   "samples": [
     {
-      "displayName": "IsPointInEllipse",
+      "displayName": "Geometry Utils",
       "description": "Example of Geometry Utils in action",
-      "path": "Samples~/Examples/IsPointInEllipse_Example"
-    },
-	{
-      "displayName": "IsPointInRadius",
-      "description": "Example of Geometry Utils in action",
-      "path": "Samples~/Examples/IsPointInRadius_Example"
-    },
-	{
-      "displayName": "IsPointInRect",
-      "description": "Example of Geometry Utils in action",
-      "path": "Samples~/Examples/IsPointInRect_Example"
-    },
-	{
-      "displayName": "IsPointInTriangle",
-      "description": "Example of Geometry Utils in action",
-      "path": "Samples~/Examples/IsPointInTriangle_Example"
-    },
-	{
-      "displayName": "OrientationPoint",
-      "description": "Example of Geometry Utils in action",
-      "path": "Samples~/Examples/OrientationPoint_Example"
+      "path": "Samples~/Examples"
     }
   ],
+  "dependencies":
+  {
+    "asim.unity.helpers" : "0.5.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GDAsim/asim.unity.utils.geometry.git"

@@ -4,15 +4,16 @@ using asim.unity.helpers;
 
 namespace asim.unity.utils.geometry
 {
+    [ExecuteInEditMode]
     public class IsPointInTriangle_Example : MonoBehaviour
     {
         [SerializeField] Text Text;
 
         [SerializeField] Camera cam;
 
-        [SerializeField] GameObject TriP1;
-        [SerializeField] GameObject TriP2;
-        [SerializeField] GameObject TriP3;
+        [SerializeField] GameObject P1;
+        [SerializeField] GameObject P2;
+        [SerializeField] GameObject P3;
 
         [SerializeField] GameObject PointP;
 
@@ -26,42 +27,47 @@ namespace asim.unity.utils.geometry
 
         void OnGUI()
         {
-            //Convert World Pos to GUI Pos
-            Vector3 GUIp1 = cam.WorldToScreenPoint(TriP1.transform.position);
-            Vector3 GUIp2 = cam.WorldToScreenPoint(TriP2.transform.position);
-            Vector3 GUIp3 = cam.WorldToScreenPoint(TriP3.transform.position);
-
-            GUIp1.y = UnityOnGUIHelper.Height - GUIp1.y;
-            GUIp2.y = UnityOnGUIHelper.Height - GUIp2.y;
-            GUIp3.y = UnityOnGUIHelper.Height - GUIp3.y;
+            //Convert World Pos to Screen Pos
+            Vector3 screen_p1 = UnityOnGUIHelper.WorldToScreenPos(cam, P1.transform.position);
+            Vector3 screen_p2 = UnityOnGUIHelper.WorldToScreenPos(cam, P2.transform.position);
+            Vector3 screen_p3 = UnityOnGUIHelper.WorldToScreenPos(cam, P3.transform.position);
 
             //Draw Triangle
-            UnityOnGUIHelper.DrawLine(GUIp1, GUIp2, Color.red, 8);
-            UnityOnGUIHelper.DrawLine(GUIp2, GUIp3, Color.red, 8);
-            UnityOnGUIHelper.DrawLine(GUIp3, GUIp1, Color.red, 8);
+            UnityOnGUIHelper.DrawLine(screen_p1, screen_p2, Color.red, 8);
+            UnityOnGUIHelper.DrawLine(screen_p2, screen_p3, Color.red, 8);
+            UnityOnGUIHelper.DrawLine(screen_p3, screen_p1, Color.red, 8);
 
-
+            //Update Text
             int IsPointInTriangle;
             if (oreintationMethod == PointTriangleMethod.Barycentric)
             {
-                IsPointInTriangle = GeometryUtils.IsPointInTriangle(TriP1.transform.position, TriP2.transform.position, TriP3.transform.position, PointP.transform.position);
+                IsPointInTriangle = GeometryUtils.IsPointInTriangle(P1.transform.position, P2.transform.position, P3.transform.position, PointP.transform.position);
             }
             else if (oreintationMethod == PointTriangleMethod.Orientation)
             {
-                IsPointInTriangle = GeometryUtils.IsPointInTriangleOrientation(TriP1.transform.position, TriP2.transform.position, TriP3.transform.position, PointP.transform.position);
+                IsPointInTriangle = GeometryUtils.IsPointInTriangleOrientation(P1.transform.position, P2.transform.position, P3.transform.position, PointP.transform.position);
             }
             else if (oreintationMethod == PointTriangleMethod.Area)
             {
-                IsPointInTriangle = GeometryUtils.IsPointInTriangleArea(TriP1.transform.position, TriP2.transform.position, TriP3.transform.position, PointP.transform.position);
+                IsPointInTriangle = GeometryUtils.IsPointInTriangleArea(P1.transform.position, P2.transform.position, P3.transform.position, PointP.transform.position);
             }
             else
             {
                 IsPointInTriangle = -1;
             }
 
-            if (IsPointInTriangle == 1) Text.text = "Point Is Inside Of Triangle";
-            else if (IsPointInTriangle == -1) Text.text = "Point Is Outside Of Triangle";
-            else Text.text = "Point Is On Triangle";
+            if (IsPointInTriangle == 1)
+            {
+                Text.text = "Point Is Inside Of Triangle";
+            }
+            else if (IsPointInTriangle == -1)
+            {
+                Text.text = "Point Is Outside Of Triangle";
+            }
+            else
+            {
+                Text.text = "Point Is On Triangle";
+            }
         }
     }
 }

@@ -4,40 +4,52 @@ using asim.unity.helpers;
 
 namespace asim.unity.utils.geometry
 {
+    [ExecuteInEditMode]
     public class IsPointInEllipse_Example : MonoBehaviour
     {
         [SerializeField] Text Text;
 
         [SerializeField] Camera cam;
 
-        [SerializeField] GameObject TargetCenter;
-        public Vector2 EllipseSize;
-
         [SerializeField] GameObject Point;
+        [SerializeField] GameObject EllipseCenter;
+        [SerializeField] Vector2 EllipseSize;
+
+        public bool DoRotate;
 
         float rotation = 0;
         void OnGUI()
         {
-            //Convert World Pos to GUI Pos
-            Vector3 GUIcenterpos = cam.WorldToScreenPoint(TargetCenter.transform.position);
-            Vector3 GUIpointpos = cam.WorldToScreenPoint(Point.transform.position);
-            GUIcenterpos.y = UnityOnGUIHelper.Height - GUIcenterpos.y;
-            GUIpointpos.y = UnityOnGUIHelper.Height - GUIpointpos.y;
+            //Convert World Pos to Screen Pos
+            Vector3 screen_centerpos = UnityOnGUIHelper.WorldToScreenPos(cam, EllipseCenter.transform.position);
+            Vector3 screen_pointpos = UnityOnGUIHelper.WorldToScreenPos(cam, Point.transform.position);
 
-            Vector3 radiusX = cam.WorldToScreenPoint(TargetCenter.transform.position + new Vector3(EllipseSize.x, 0, 0));
-            Vector3 radiusY = cam.WorldToScreenPoint(TargetCenter.transform.position + new Vector3(0, EllipseSize.y, 0));
-            radiusX.y = UnityOnGUIHelper.Height - radiusX.y;
-            radiusY.y = UnityOnGUIHelper.Height - radiusY.y;
-            var GUIEllipseSize = new Vector2(Vector3.Distance(GUIcenterpos, radiusX), Vector3.Distance(GUIcenterpos, radiusY));
+            Vector3 radiusX = UnityOnGUIHelper.WorldToScreenPos(cam, EllipseCenter.transform.position + new Vector3(EllipseSize.x, 0, 0));
+            Vector3 radiusY = UnityOnGUIHelper.WorldToScreenPos(cam, EllipseCenter.transform.position + new Vector3(0, EllipseSize.y, 0));
+            var GUIEllipseSize = new Vector2(Vector3.Distance(screen_centerpos, radiusX), Vector3.Distance(screen_centerpos, radiusY));
 
-            rotation += 0.003f;
+            if(DoRotate)
+            {
+                rotation += 0.003f;
+            }
 
-            int IsPointInEllipse = GeometryUtils.IsPointInEllipse(GUIcenterpos, GUIEllipseSize, -rotation, GUIpointpos);
-            if (IsPointInEllipse == 1) Text.text = "Point Inside Ellipse";
-            else if (IsPointInEllipse == -1) Text.text = "Point Outside Ellipse";
-            else Text.text = "Point On Ellipse";
+            //Draw Ellipse
+            UnityOnGUIHelper.DrawEllipse(screen_centerpos, GUIEllipseSize, rotation, new Color32(0, 255, 0, 255), Color.red, 1);
 
-            UnityOnGUIHelper.DrawEllipse(GUIcenterpos, GUIEllipseSize, rotation, new Color32(0, 255, 0,255), Color.red, 1);
+            //Update Text
+            int IsPointInEllipse = GeometryUtils.IsPointInEllipse(screen_centerpos, GUIEllipseSize, rotation, screen_pointpos);
+            if (IsPointInEllipse == 1)
+            {
+                Text.text = "Point Inside Ellipse";
+            }
+            else if (IsPointInEllipse == -1)
+            {
+                Text.text = "Point Outside Ellipse";
+            }
+            else
+            {
+                Text.text = "Point On Ellipse";
+            }
         }
     }
 }
