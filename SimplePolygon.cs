@@ -6,10 +6,10 @@ using UnityEngine;
 namespace asim.unity.utils.geometry
 {
     /// <summary>
-    /// Class for Simple Polgon
-    /// Verticies are in Clockwise direction
-    /// Hole Verticies are in Anti-Clockwise
+    /// Simple Polygon define as OuterVertices + HoleVerticies
     /// Supports Multiple Holes and Inner Polygon
+    /// OuterVertices must be in Clockwise winding direction
+    /// Hole Verticies must be in Anti-Clockwise winding direction
     /// </summary>
     public class SimplePolygon
     {
