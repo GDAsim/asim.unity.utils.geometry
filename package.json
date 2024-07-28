@@ -1,6 +1,6 @@
 {
   "name": "asim.unity.utils.geometry",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "displayName": "Asim Unity Utils Geometry",
   "description": "Asim Geometry",
   "unity": "2020.3",
@@ -19,9 +19,8 @@
       "path": "Samples~/Examples"
     }
   ],
-  "dependencies":
-  {
-    "asim.unity.helpers" : "0.5.1"
+  "dependencies": {
+    "asim.unity.helpers": "0.5.1"
   },
   "repository": {
     "type": "git",
